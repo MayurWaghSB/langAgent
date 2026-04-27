@@ -20,7 +20,6 @@
   "scripts": {
     "start": "node cli/index.js",
     "dev": "node cli/index.js chat",
-    "postinstall": "node ./cli/postinstall.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": ["ai", "cli", "langchain", "langgraph", "developer-tools", "agent"],
