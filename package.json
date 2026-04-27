@@ -1,0 +1,40 @@
+{
+  "name": "dev-agent-cli",
+  "version": "1.0.0",
+  "description": "Production-grade AI-powered CLI tool for developers — built with LangChain & LangGraph",
+  "main": "index.js",
+  "type": "module",
+  "bin": {
+    "dev-agent": "./cli/index.js"
+  },
+  "files": [
+    "cli/",
+    "agent/",
+    "tools/",
+    "services/",
+    "config/",
+    "utils/",
+    "index.js",
+    "README.md"
+  ],
+  "scripts": {
+    "start": "node cli/index.js",
+    "dev": "node cli/index.js chat",
+    "postinstall": "node ./cli/postinstall.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": ["ai", "cli", "langchain", "langgraph", "developer-tools", "agent"],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@langchain/core": "^1.1.41",
+    "@langchain/groq": "^1.2.0",
+    "@langchain/langgraph": "^1.2.9",
+    "@langchain/tavily": "^1.2.0",
+    "chalk": "^5.4.1",
+    "commander": "^13.1.0",
+    "dotenv": "^17.4.2",
+    "ora": "^8.2.0",
+    "uuid": "^11.1.0"
+  }
+}

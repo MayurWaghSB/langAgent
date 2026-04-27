@@ -1,0 +1,7 @@
+# Don't publish these to npm
+.env
+.env.*
+!.env.example
+node_modules/
+.git/
+.gitignore

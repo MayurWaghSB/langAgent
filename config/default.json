@@ -1,0 +1,51 @@
+{
+  "llm": {
+    "provider": "groq",
+    "model": "openai/gpt-oss-120b",
+    "temperature": 0,
+    "maxTokens": 4096,
+    "streaming": true
+  },
+  "agent": {
+    "maxIterations": 10,
+    "verbose": true,
+    "systemPrompt": "You are Dev-Agent, an expert AI programming assistant. You help developers understand code, debug errors, generate APIs, and answer technical questions. Be concise, accurate, and provide code examples when helpful."
+  },
+  "tools": {
+    "tavily": {
+      "maxResults": 5,
+      "timeout": 10000
+    },
+    "fileReader": {
+      "maxFileSizeKB": 500,
+      "supportedExtensions": [".js", ".ts", ".py", ".java", ".go", ".rs", ".rb", ".php", ".c", ".cpp", ".h", ".css", ".html", ".json", ".yaml", ".yml", ".md", ".txt", ".log", ".env", ".sh", ".sql"]
+    },
+    "codeAnalyzer": {
+      "includeLineNumbers": true
+    }
+  },
+  "profiles": {
+    "default": {
+      "systemPrompt": "You are Dev-Agent, an expert AI programming assistant."
+    },
+    "backend": {
+      "systemPrompt": "You are Dev-Agent, specialized in backend development. Focus on server-side architecture, APIs, databases, authentication, and performance optimization."
+    },
+    "frontend": {
+      "systemPrompt": "You are Dev-Agent, specialized in frontend development. Focus on UI/UX, component architecture, state management, accessibility, and responsive design."
+    },
+    "devops": {
+      "systemPrompt": "You are Dev-Agent, specialized in DevOps and infrastructure. Focus on CI/CD, containerization, cloud services, monitoring, and deployment strategies."
+    }
+  },
+  "logging": {
+    "level": "info",
+    "showToolCalls": true,
+    "showThinking": true
+  },
+  "api": {
+    "enabled": false,
+    "baseUrl": "http://localhost:3000",
+    "timeout": 30000
+  }
+}
