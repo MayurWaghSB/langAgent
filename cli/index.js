@@ -13,9 +13,8 @@
  */
 
 import { Command } from "commander";
-import dotenv from "dotenv";
 import chalk from "chalk";
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { homedir } from "node:os";
 import { askCommand } from "./commands/ask.js";
@@ -25,16 +24,30 @@ import { generateCommand } from "./commands/generate.js";
 import { chatCommand } from "./commands/chat.js";
 import { printHeader } from "../utils/format.js";
 
-// Load environment variables from multiple locations (first found wins)
-// 1. Current working directory .env (local project)
-// 2. User home directory ~/.dev-agent/.env (global install)
-const homeEnv = resolve(homedir(), ".dev-agent", ".env");
-dotenv.config(); // try cwd first
-if (!process.env.GROQ_API_KEY && existsSync(homeEnv)) {
-  dotenv.config({ path: homeEnv });
+// Load API keys from ~/.dev-agent/.env (created by `dev-agent setup`)
+const envPath = resolve(homedir(), ".dev-agent", ".env");
+if (existsSync(envPath)) {
+  const content = readFileSync(envPath, "utf-8");
+  for (const line of content.split("\n")) {
+    const match = line.match(/^([^#=]+)=(.*)$/);
+    if (match) {
+      const key = match[1].trim();
+      const val = match[2].trim();
+      if (!process.env[key]) process.env[key] = val;
+    }
+  }
 }
 
 const program = new Command();
+
+// Check if API keys are configured before running commands
+function checkKeys() {
+  if (!process.env.GROQ_API_KEY) {
+    console.log(chalk.yellow("\n  ⚠ API keys not configured. Run setup first:\n"));
+    console.log(chalk.green("    dev-agent setup\n"));
+    process.exit(1);
+  }
+}
 
 program
   .name("dev-agent")
@@ -47,6 +60,7 @@ program
   .description("Ask a technical question")
   .option("-p, --profile <profile>", "Config profile (default, backend, frontend, devops)", "default")
   .action(async (questionParts, options) => {
+    checkKeys();
     const question = questionParts.join(" ");
     await askCommand(question, options);
   });
@@ -57,6 +71,7 @@ program
   .description("Explain a source code file")
   .option("-p, --profile <profile>", "Config profile", "default")
   .action(async (file, options) => {
+    checkKeys();
     await explainCommand(file, options);
   });
 
@@ -66,6 +81,7 @@ program
   .description("Debug an error log file")
   .option("-p, --profile <profile>", "Config profile", "default")
   .action(async (file, options) => {
+    checkKeys();
     await debugCommand(file, options);
   });
 
@@ -77,6 +93,7 @@ program
   .option("-s, --style <style>", "Style: modular, minimal, full", "modular")
   .option("-p, --profile <profile>", "Config profile", "default")
   .action(async (type, descriptionParts, options) => {
+    checkKeys();
     const description = descriptionParts.join(" ");
     await generateCommand(type, description, options);
   });
@@ -87,6 +104,7 @@ program
   .description("Start an interactive chat session")
   .option("-p, --profile <profile>", "Config profile", "default")
   .action(async (options) => {
+    checkKeys();
     printHeader("Dev-Agent Interactive Chat");
     console.log(chalk.gray('  Type your message and press Enter. Type "exit" or "quit" to leave.\n'));
     await chatCommand(options);
@@ -95,7 +113,7 @@ program
 // ── setup ────────────────────────────────────────
 program
   .command("setup")
-  .description("Configure API keys (creates ~/.dev-agent/.env)")
+  .description("Configure API keys (one-time setup)")
   .action(async () => {
     const { setupCommand } = await import("./commands/setup.js");
     await setupCommand();
