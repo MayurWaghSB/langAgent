@@ -2,6 +2,8 @@
 
 A LangChain/LangGraph agent that codes like a senior software engineer. It follows a structured workflow — analyze, plan, code, test, review, refactor — to produce production-quality code for any programming language.
 
+Built with **Node.js** and **TypeScript**.
+
 ## Architecture
 
 The agent uses a [LangGraph](https://github.com/langchain-ai/langgraph) state graph with six nodes:
@@ -22,12 +24,12 @@ analyze_task ──► plan_approach ──► generate_code ──► generate_
 
 | Node | Purpose |
 |------|---------|
-| `analyze_task` | Extracts language, complexity, requirements, and constraints from the task |
-| `plan_approach` | Creates an architecture plan, implementation steps, and selects design patterns |
-| `generate_code` | Writes production-quality code following the plan |
-| `generate_tests` | Generates comprehensive tests for the code |
-| `review_code` | Reviews code for bugs, security, performance, and style issues |
-| `refactor_code` | Addresses review issues and loops back for re-testing |
+| `analyzeTask` | Extracts language, complexity, requirements, and constraints from the task |
+| `planApproach` | Creates an architecture plan, implementation steps, and selects design patterns |
+| `generateCode` | Writes production-quality code following the plan |
+| `generateTests` | Generates comprehensive tests for the code |
+| `reviewCode` | Reviews code for bugs, security, performance, and style issues |
+| `refactorCode` | Addresses review issues and loops back for re-testing |
 
 The review node uses a conditional edge: if the verdict is `needs_refactor` and the iteration budget hasn't been exhausted, the graph loops back through refactoring. Otherwise it terminates.
 
@@ -35,22 +37,17 @@ The review node uses a conditional edge: if the verdict is `needs_refactor` and 
 
 ### Prerequisites
 
-- Python 3.11+
+- Node.js 18+
 - A Groq API key (free) **or** an OpenAI API key
 
 ### Installation
 
 ```bash
-# Clone the repo and cd into it
+# Clone the repo
 git clone <repo-url> && cd senior-engineer-agent
 
-# Create a virtual environment
-python -m venv .venv
-source .venv/bin/activate  # Linux/macOS
-# .venv\Scripts\activate   # Windows
-
-# Install with dev dependencies
-pip install -e ".[dev]"
+# Install dependencies
+npm install
 
 # Configure your API key
 cp .env.example .env
@@ -64,28 +61,29 @@ cp .env.example .env
 
 ```bash
 # Pass the task as an argument
-senior-engineer "Write a Python class that implements an LRU cache with O(1) get and put"
-
-# Or pipe from stdin
-echo "Implement a binary search tree in TypeScript" | senior-engineer
+npx tsx src/cli.ts "Write a Python class that implements an LRU cache with O(1) get and put"
 
 # With options
-senior-engineer --max-iterations 5 --verbose "Build a REST API rate limiter in Go"
+npx tsx src/cli.ts --max-iterations 5 "Build a REST API rate limiter in Go"
+
+# After building
+npm run build
+node dist/cli.js "Implement a binary search tree in TypeScript"
 ```
 
-### Python API
+### Node.js API
 
-```python
-from senior_engineer_agent.runner import run
+```typescript
+import { run } from "senior-engineer-agent";
 
-result = run(
-    "Write a thread-safe singleton pattern in Java",
-    max_iterations=3,
-)
+const result = await run(
+  "Write a thread-safe singleton pattern in Java",
+  { maxIterations: 3 },
+);
 
-print(result.code)
-print(result.tests)
-print(result.review_verdict)  # "approved" or "needs_refactor"
+console.log(result.code);
+console.log(result.tests);
+console.log(result.reviewVerdict); // "approved" or "needs_refactor"
 ```
 
 ### Kiro Custom Agent
@@ -115,13 +113,13 @@ This project includes a Kiro custom agent definition at `.kiro/agents/senior-eng
 
 ```bash
 # Run all tests
-pytest
+npm test
 
-# With coverage
-pytest --cov=senior_engineer_agent
+# Watch mode
+npm run test:watch
 
-# Run specific test file
-pytest tests/test_nodes.py -v
+# Type checking
+npm run typecheck
 ```
 
 ## Project Structure
@@ -129,23 +127,24 @@ pytest tests/test_nodes.py -v
 ```
 ├── .kiro/agents/
 │   └── senior-engineer.md      # Kiro custom agent definition
-├── senior_engineer_agent/
-│   ├── __init__.py
-│   ├── cli.py                  # CLI entry point
-│   ├── config.py               # LLM configuration
-│   ├── graph.py                # LangGraph workflow definition
-│   ├── nodes.py                # Graph node implementations
-│   ├── prompts.py              # System and node-level prompts
-│   ├── runner.py               # High-level runner
-│   └── state.py                # Pydantic state models
+├── src/
+│   ├── cli.ts                  # CLI entry point
+│   ├── config.ts               # LLM configuration (Groq / OpenAI)
+│   ├── graph.ts                # LangGraph workflow definition
+│   ├── index.ts                # Public API exports
+│   ├── nodes.ts                # Graph node implementations
+│   ├── prompts.ts              # System and node-level prompts
+│   ├── runner.ts               # High-level runner
+│   └── state.ts                # State type definitions
 ├── tests/
-│   ├── conftest.py             # Shared fixtures
-│   ├── test_graph.py           # Graph structure tests
-│   ├── test_nodes.py           # Node unit tests (mocked LLM)
-│   └── test_state.py           # State model tests
+│   ├── graph.test.ts           # Graph structure tests
+│   ├── nodes.test.ts           # Node unit tests (mocked LLM)
+│   └── state.test.ts           # State type tests
 ├── .env.example
 ├── .gitignore
-├── pyproject.toml
+├── package.json
+├── tsconfig.json
+├── vitest.config.ts
 └── README.md
 ```
 
